@@ -37,4 +37,8 @@ export type TUser = {
   name: string;
 };
 
+export type TCreateOrderData = {
+  ingredients: string[];
+};
+
 export type TTabMode = 'bun' | 'sauce' | 'main';

@@ -1,4 +1,4 @@
-import { TOrder } from '@utils-types';
+import { TConstructorIngredient, TOrder } from '@utils-types';
 
 export type BurgerConstructorUIProps = {
   constructorItems: any;
@@ -7,4 +7,7 @@ export type BurgerConstructorUIProps = {
   orderModalData: TOrder | null;
   onOrderClick: () => void;
   closeOrderModal: () => void;
+  onAdd: (item: TConstructorIngredient) => void;
+  onRemove: (id: string) => void;
+  onMove: (fromIndex: number, toIndex: number) => void;
 };

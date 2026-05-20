@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 import {
   Button,
   ConstructorElement,
@@ -16,7 +16,10 @@ export const BurgerConstructorUI: FC<BurgerConstructorUIProps> = ({
   price,
   orderModalData,
   onOrderClick,
-  closeOrderModal
+  closeOrderModal,
+  onRemove,
+  onMove,
+  onAdd
 }) => (
   <section className={styles.burger_constructor}>
     {constructorItems.bun ? (
@@ -45,6 +48,8 @@ export const BurgerConstructorUI: FC<BurgerConstructorUIProps> = ({
               index={index}
               totalItems={constructorItems.ingredients.length}
               key={item.id}
+              onRemove={onRemove}
+              onMove={onMove}
             />
           )
         )
@@ -88,17 +93,15 @@ export const BurgerConstructorUI: FC<BurgerConstructorUIProps> = ({
     </div>
 
     {orderRequest && (
-      <Modal onClose={closeOrderModal} title={'Оформляем заказ...'}>
-        <Preloader />
-      </Modal>
-    )}
-
-    {orderModalData && (
       <Modal
         onClose={closeOrderModal}
-        title={orderRequest ? 'Оформляем заказ...' : ''}
+        title={orderModalData ? 'Заказ оформлен' : 'Оформляем заказ...'}
       >
-        <OrderDetailsUI orderNumber={orderModalData.number} />
+        {orderModalData ? (
+          <OrderDetailsUI orderNumber={orderModalData.number} />
+        ) : (
+          <Preloader />
+        )}
       </Modal>
     )}
   </section>
