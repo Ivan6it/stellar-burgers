@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AppDispatch, RootState } from 'src/services/store';
 import {
   createOrder,
@@ -17,6 +17,7 @@ import { FC, useEffect, useMemo } from 'react';
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const constructor = useSelector((state: RootState) => state.constructorSlice);
   const orderState = useSelector((state: RootState) => state.order);
@@ -62,7 +63,7 @@ export const BurgerConstructor: FC = () => {
     if (isOrderDisabled) return;
 
     if (!user) {
-      navigate('/login', { state: { from: '/constructor' } });
+      navigate('/login', { state: { from: location } });
       return;
     }
 

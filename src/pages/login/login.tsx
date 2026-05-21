@@ -1,30 +1,32 @@
 import { FC, SyntheticEvent, useState } from 'react';
 import { LoginUI } from '@ui-pages';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { AppDispatch } from '../../services/store';
-import { loginUser } from '../../services/userSlice';
+import { AppDispatch, RootState } from '../../services/store';
+import { loginUser, checkUserAuth } from '../../services/userSlice';
+import { useLocation } from 'react-router-dom';
 
 export const Login: FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorText, setErrorText] = useState('');
 
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSubmit = (e: SyntheticEvent) => {
+  const error = useSelector((state: RootState) => state.user.error);
+
+  const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    setErrorText('');
 
-    dispatch(loginUser({ email, password }))
-      .unwrap()
-      .then(() => {
-        navigate('/');
-      })
-      .catch((err) => {
-        setErrorText(err || 'Ошибка входа');
-      });
+    try {
+      await dispatch(loginUser({ email, password })).unwrap();
+      await dispatch(checkUserAuth()).unwrap();
+
+      const from = location.state?.from || '/';
+
+      navigate(from, { replace: true });
+    } catch {}
   };
 
   return (
@@ -33,7 +35,7 @@ export const Login: FC = () => {
       setEmail={setEmail}
       password={password}
       setPassword={setPassword}
-      errorText={errorText}
+      errorText={error || ''}
       handleSubmit={handleSubmit}
     />
   );

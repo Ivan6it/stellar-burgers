@@ -9,23 +9,18 @@ import { ResetPassword } from '../../pages/reset-password/reset-password';
 import { ForgotPassword } from '../../pages/forgot-password/forgot-password';
 import { Register } from '../../pages/register/register';
 import { Feed } from '../../pages/feed/feed';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import ProtectedRoute from '../protected-route/protected-route';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from 'src/services/store';
 import { useEffect } from 'react';
 import { fetchIngredients } from '../../services/ingredientsSlice';
+import { checkUserAuth } from '../../services/userSlice';
 import { Modal } from '../modal';
 import { IngredientDetails } from '../ingredient-details';
-import { checkUserAuth } from '../../services/userSlice';
 import { OrderInfo } from '../order-info/order-info';
 
 const App = () => {
-  const {
-    items: ingredients,
-    loading: isIngredientsLoading,
-    error
-  } = useSelector((state: RootState) => state.ingredients);
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
@@ -33,104 +28,131 @@ const App = () => {
     dispatch(checkUserAuth());
   }, [dispatch]);
 
-  const router = createBrowserRouter([
-    {
-      path: '/',
-      element: <Layout />,
-      children: [
-        {
-          index: true,
-          element: isIngredientsLoading ? (
-            <Preloader />
-          ) : error ? (
-            <div className={`${styles.error} text text_type_main-medium pt-4`}>
-              {error}
-            </div>
-          ) : ingredients.length === 0 ? (
-            <div className={`${styles.title} text text_type_main-medium pt-4`}>
-              Нет игредиентов
-            </div>
-          ) : (
-            <ConstructorPage />
-          )
-        },
-        { path: 'feed', element: <Feed /> },
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
+  );
+};
 
-        // Гость
-        {
-          path: 'login',
-          element: (
-            <ProtectedRoute onlyUnAuth>
-              <Login />
-            </ProtectedRoute>
-          )
-        },
-        {
-          path: 'register',
-          element: (
-            <ProtectedRoute onlyUnAuth>
-              <Register />
-            </ProtectedRoute>
-          )
-        },
-        {
-          path: 'forgot-password',
-          element: (
-            <ProtectedRoute onlyUnAuth>
-              <ForgotPassword />
-            </ProtectedRoute>
-          )
-        },
-        {
-          path: 'reset-password',
-          element: (
-            <ProtectedRoute onlyUnAuth>
-              <ResetPassword />
-            </ProtectedRoute>
-          )
-        },
+const AppContent = () => {
+  const location = useLocation();
+  const background = location.state?.background;
 
-        // Пользователь
-        {
-          path: 'profile',
-          element: (
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          )
-        },
-        {
-          path: 'profile/orders',
-          element: (
-            <ProtectedRoute>
-              <ProfileOrders />
-            </ProtectedRoute>
-          )
-        },
+  const {
+    items: ingredients,
+    loading: isIngredientsLoading,
+    error
+  } = useSelector((state: RootState) => state.ingredients);
 
-        //Модалки
-        {
-          path: 'ingredients/:id',
-          element: (
+  return (
+    <>
+      <Routes location={background || location}>
+        <Route path='/' element={<Layout />}>
+          <Route
+            index
+            element={
+              isIngredientsLoading ? (
+                <Preloader />
+              ) : error ? (
+                <div
+                  className={`${styles.error} text text_type_main-medium pt-4`}
+                >
+                  {error}
+                </div>
+              ) : ingredients.length === 0 ? (
+                <div
+                  className={`${styles.title} text text_type_main-medium pt-4`}
+                >
+                  Нет ингредиентов
+                </div>
+              ) : (
+                <ConstructorPage />
+              )
+            }
+          />
+
+          <Route
+            path='login'
+            element={
+              <ProtectedRoute onlyUnAuth>
+                <Login />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='register'
+            element={
+              <ProtectedRoute onlyUnAuth>
+                <Register />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='forgot-password'
+            element={
+              <ProtectedRoute onlyUnAuth>
+                <ForgotPassword />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='reset-password'
+            element={
+              <ProtectedRoute onlyUnAuth>
+                <ResetPassword />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path='profile'
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='profile/orders'
+            element={
+              <ProtectedRoute>
+                <ProfileOrders />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path='feed' element={<Feed />} />
+
+          <Route path='*' element={<NotFound404 />} />
+        </Route>
+      </Routes>
+
+      <Routes>
+        <Route
+          path='/ingredients/:id'
+          element={
             <Modal
               title='Детали ингредиента'
               onClose={() => window.history.back()}
             >
               <IngredientDetails />
             </Modal>
-          )
-        },
-        {
-          path: 'feed/:number',
-          element: (
+          }
+        />
+
+        <Route
+          path='/feed/:number'
+          element={
             <Modal title='Детали заказа' onClose={() => window.history.back()}>
               <OrderInfo />
             </Modal>
-          )
-        },
-        {
-          path: 'profile/orders/:number',
-          element: (
+          }
+        />
+
+        <Route
+          path='/profile/orders/:number'
+          element={
             <ProtectedRoute>
               <Modal
                 title='Детали заказа'
@@ -139,15 +161,11 @@ const App = () => {
                 <OrderInfo />
               </Modal>
             </ProtectedRoute>
-          )
-        },
-
-        { path: '*', element: <NotFound404 /> }
-      ]
-    }
-  ]);
-
-  return <RouterProvider router={router} />;
+          }
+        />
+      </Routes>
+    </>
+  );
 };
 
 export default App;
