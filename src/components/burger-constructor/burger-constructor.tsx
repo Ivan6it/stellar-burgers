@@ -76,6 +76,7 @@ export const BurgerConstructor: FC = () => {
     dispatch(createOrder(ingredientIds))
       .unwrap()
       .then(() => {
+        dispatch(resetConstructor());
         dispatch(fetchUserOrders());
       })
       .catch((err) => {
@@ -85,7 +86,6 @@ export const BurgerConstructor: FC = () => {
 
   const closeOrderModal = () => {
     dispatch(resetOrder());
-    dispatch(resetConstructor());
     navigate('/feed');
   };
 

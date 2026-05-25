@@ -10,10 +10,17 @@ type Props = {
 
 export const ProtectedRoute = ({ children, onlyUnAuth = false }: Props) => {
   const user = useSelector((state: RootState) => state.user.user);
-  const loading = useSelector((state: RootState) => state.user.loading);
+  const isAuthChecked = useSelector(
+    (state: RootState) => state.user.isAuthChecked
+  );
+  const isLoading = useSelector((state: RootState) => state.user.loading);
   const location = useLocation();
 
-  if (loading) {
+  if (!isAuthChecked) {
+    return <Preloader />;
+  }
+
+  if (isLoading) {
     return <Preloader />;
   }
 

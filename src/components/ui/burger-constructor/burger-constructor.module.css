@@ -8,11 +8,31 @@
 
 .elements {
   min-height: 100px;
-
-  overflow-y: scroll;
+  max-height: calc(100vh - 540px);
+  overflow-y: auto;
   list-style-type: none;
   margin: 0;
   padding: 0;
+
+  scrollbar-width: thin;
+  scrollbar-color: #8585ad transparent;
+}
+
+.content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: #8585ad;
+  border-radius: 8px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: #6d6db0;
 }
 
 .total {

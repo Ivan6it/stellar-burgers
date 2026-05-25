@@ -35,11 +35,7 @@ export const checkUserAuth = createAsyncThunk(
       } catch {
         localStorage.removeItem('refreshToken');
         setCookie('accessToken', '');
-      } finally {
-        dispatch(authChecked());
       }
-    } else {
-      dispatch(authChecked());
     }
   }
 );
@@ -145,8 +141,26 @@ const userSlice = createSlice({
         state.error = action.payload as string;
       })
 
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
         state.user = null;
+      })
+      .addCase(logoutUser.rejected, (state) => {
+        state.loading = false;
+        state.user = null;
+      })
+
+      .addCase(checkUserAuth.pending, (state) => {
+        state.isAuthChecked = false;
+      })
+      .addCase(checkUserAuth.fulfilled, (state) => {
+        state.isAuthChecked = true;
+      })
+      .addCase(checkUserAuth.rejected, (state) => {
+        state.isAuthChecked = true;
       });
   }
 });
