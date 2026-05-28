@@ -68,4 +68,6 @@ export const {
   resetConstructor
 } = constructorSlice.actions;
 
+export const constructorInitialState = initialState;
+
 export default constructorSlice.reducer;

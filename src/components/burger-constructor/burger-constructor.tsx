@@ -86,7 +86,6 @@ export const BurgerConstructor: FC = () => {
 
   const closeOrderModal = () => {
     dispatch(resetOrder());
-    navigate('/feed');
   };
 
   const handleRemove = (id: string) => {
