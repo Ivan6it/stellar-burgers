@@ -1,14 +1,21 @@
 import { useState, useRef, useEffect, FC } from 'react';
 import { useInView } from 'react-intersection-observer';
 
-import { TTabMode } from '@utils-types';
+import { TIngredient, TTabMode } from '@utils-types';
 import { BurgerIngredientsUI } from '../ui/burger-ingredients';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from 'src/services/store';
+import { addIngredient } from '../../services/constructorSlice';
 
 export const BurgerIngredients: FC = () => {
-  /** TODO: взять переменные из стора */
-  const buns = [];
-  const mains = [];
-  const sauces = [];
+  const dispatch = useDispatch();
+  const { items: ingredients } = useSelector(
+    (state: RootState) => state.ingredients
+  );
+
+  const buns = ingredients.filter((item) => item.type === 'bun');
+  const mains = ingredients.filter((item) => item.type === 'main');
+  const sauces = ingredients.filter((item) => item.type === 'sauce');
 
   const [currentTab, setCurrentTab] = useState<TTabMode>('bun');
   const titleBunRef = useRef<HTMLHeadingElement>(null);
@@ -47,7 +54,9 @@ export const BurgerIngredients: FC = () => {
       titleSaucesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  return null;
+  const handleAdd = (ingredient: TIngredient) => {
+    dispatch(addIngredient(ingredient));
+  };
 
   return (
     <BurgerIngredientsUI
@@ -62,6 +71,7 @@ export const BurgerIngredients: FC = () => {
       mainsRef={mainsRef}
       saucesRef={saucesRef}
       onTabClick={onTabClick}
+      handleAdd={handleAdd}
     />
   );
 };

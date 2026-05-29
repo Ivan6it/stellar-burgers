@@ -1,4 +1,4 @@
-import React, { FC, memo } from 'react';
+import { FC, memo } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './burger-ingredient.module.css';
 
@@ -15,7 +15,7 @@ export const BurgerIngredientUI: FC<TBurgerIngredientUIProps> = memo(
     const { image, price, name, _id } = ingredient;
 
     return (
-      <li className={styles.container}>
+      <li className={styles.container} data-testid='ingredient-card'>
         <Link
           className={styles.article}
           to={`/ingredients/${_id}`}
@@ -31,7 +31,7 @@ export const BurgerIngredientUI: FC<TBurgerIngredientUIProps> = memo(
         </Link>
         <AddButton
           text='Добавить'
-          onClick={handleAdd}
+          onClick={() => handleAdd()}
           extraClass={`${styles.addButton} mt-8`}
         />
       </li>
