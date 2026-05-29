@@ -1,43 +1,10 @@
 import { test, expect } from '@playwright/test';
-import ingredientsData from '../data/ingredients.json';
-import userData from '../data/user.json';
-import orderData from '../data/order.json';
 
 test.describe('Конструктор бургера — интеграционные тесты', () => {
   test.beforeEach(async ({ page }) => {
-    // Мокируем ингредиенты
-    await page.route('**/api/ingredients', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(ingredientsData)
-      });
-    });
-
-    // Мокируем пользователя
-    await page.route('**/api/auth/user', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(userData)
-      });
-    });
-
-    // Мокируем заказ
-    await page.route(/\/api\/orders$/, async (route) => {
-      const request = route.request();
-      const postData = await request.postData();
-      const body = postData ? JSON.parse(postData) : null;
-
-      if (!body || !Array.isArray(body.ingredients)) {
-        return route.abort();
-      }
-
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(orderData)
-      });
+    // Мокируем сетевые запросы через HAR-файл
+    await page.routeFromHAR('tests/hars/api.mock.har', {
+      notFound: 'abort'
     });
 
     // Авторизация
@@ -58,6 +25,15 @@ test.describe('Конструктор бургера — интеграцион�
 
     // После загрузки прелоадер должен исчезнуть
     await expect(page.getByTestId('preloader')).not.toBeVisible();
+  });
+
+  // Очистка состояния между тестами
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.clear();
+    });
+    await page.context().clearCookies();
+    await page.close();
   });
 
   test('добавление ингредиентов в конструктор', async ({ page }) => {
@@ -91,6 +67,14 @@ test.describe('Конструктор бургера — интеграцион�
       'Детали ингредиента'
     );
 
+    // Проверка данных булки
+    await expect(
+      page.getByRole('heading', { name: 'Краторная булка N-200i' })
+    ).toBeVisible();
+    await expect(page.getByText('Калории, ккал')).toBeVisible();
+    await expect(page.getByText('420')).toBeVisible();
+    await expect(page.getByText('1255')).toBeVisible();
+
     // Закрытие по крестику
     await page.getByTestId('close-modal').click();
     await expect(page.getByTestId('modal-title')).not.toBeVisible();
@@ -98,6 +82,14 @@ test.describe('Конструктор бургера — интеграцион�
     // Повторное открытие
     await page.getByText('Мясо бессмертных моллюсков').click();
     await expect(page.getByTestId('modal-title')).toBeVisible();
+
+    // Проверка данных начинки
+    await expect(
+      page.getByRole('heading', { name: 'Мясо бессмертных моллюсков' })
+    ).toBeVisible();
+    await expect(page.getByText('Белки, г')).toBeVisible();
+    await expect(page.getByText('433')).toBeVisible();
+    await expect(page.getByText('1337')).toBeVisible();
 
     // Закрытие по оверлею
     await page
@@ -108,16 +100,19 @@ test.describe('Конструктор бургера — интеграцион�
 
   test('оформление заказа и проверка результата', async ({ page }) => {
     // Собираем бургер
-    const bunCard = page.locator('li', { hasText: 'Краторная булка N-200i' });
-    await bunCard.getByRole('button', { name: 'Добавить' }).click();
+    await page
+      .locator('li', { hasText: 'Краторная булка N-200i' })
+      .getByRole('button', { name: 'Добавить' })
+      .click();
 
-    const fillingCard = page.locator('li', {
-      hasText: 'Мясо бессмертных моллюсков'
-    });
-    await fillingCard.getByRole('button', { name: 'Добавить' }).click();
+    await page
+      .locator('li', { hasText: 'Мясо бессмертных моллюсков' })
+      .getByRole('button', { name: 'Добавить' })
+      .click();
 
     // Проверяем добавление
     await expect(page.getByText('Краторная булка N-200i (верх)')).toBeVisible();
+    await expect(page.getByText('Краторная булка N-200i (низ)')).toBeVisible();
     await expect(
       page.locator('.constructor-element__text', {
         hasText: 'Мясо бессмертных моллюсков'
@@ -128,7 +123,7 @@ test.describe('Конструктор бургера — интеграцион�
     await page.getByRole('button', { name: /оформить заказ/i }).click();
 
     // Ждём номер заказа
-    await expect(page.getByText('12345')).toBeVisible();
+    await expect(page.getByText('105835')).toBeVisible();
 
     // Ждём, что конструктор очистился
     await expect(
@@ -145,7 +140,7 @@ test.describe('Конструктор бургера — интеграцион�
 
     // Закрываем модалку
     await page.getByTestId('close-modal').click();
-    await expect(page.getByText('12345')).not.toBeVisible();
+    await expect(page.getByText('105835')).not.toBeVisible();
 
     // Проверка на появление подсказок
     const bunPlaceholders = page.getByText('Выберите булки', { exact: false });
