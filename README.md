@@ -58,7 +58,7 @@ npm install
 
 Запустить проект:
 
-npm run dev
+npm run start
 
 ### Моя роль в проекте
 
